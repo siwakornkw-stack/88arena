@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SportType {
+  FOOTBALL
+  BASKETBALL
+  BADMINTON
+  TENNIS
+  VOLLEYBALL
+  SWIMMING
+  OTHER
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  phone         String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  points        Int           @default(0)
+
+  referralCode     String?  @unique
+  referredById     String?
+  notifEmail       Boolean  @default(true)
+  notifLine        Boolean  @default(true)
+  notifInApp       Boolean  @default(true)
+  twoFactorSecret  String?
+  twoFactorEnabled Boolean  @default(false)
+
+  referredBy        User?              @relation("Referrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals         User[]             @relation("Referrals")
+  accounts          Account[]
+  sessions          Session[]
+  bookings          Booking[]
+  waitingLists      WaitingList[]
+  reviews           Review[]
+  notifications     Notification[]
+  pointTransactions PointTransaction[]
+  pushSubscriptions PushSubscription[]
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PointTransaction {
+  id        String   @id @default(cuid())
+  userId    String
+  points    Int
+  type      String   // "EARN" | "REDEEM"
+  bookingId String?
+  note      String
+  createdAt DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  type      String
+  link      String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Field {
+  id           String    @id @default(cuid())
+  name         String
+  description  String?
+  sportType    SportType
+  pricePerHour Float
+  imageUrl     String?
+  location     String?
+  facilities   String?
+  isActive     Boolean   @default(true)
+  openTime     String    @default("08:00")
+  closeTime    String    @default("22:00")
+  lat          Float?
+  lng          Float?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  bookings     Booking[]
+  waitingLists WaitingList[]
+  reviews      Review[]
+}
+
+model Booking {
+  id                    String        @id @default(cuid())
+  userId                String
+  fieldId               String
+  date                  DateTime
+  timeSlot              String
+  status                BookingStatus @default(PENDING)
+  note                  String?
+  isRecurring           Boolean       @default(false)
+  recurringGroupId      String?
+  stripeSessionId       String?
+  stripePaymentIntentId String?
+  paidAt                DateTime?
+  couponCode            String?
+  discountAmount        Float?
+  pointsRedeemed        Int?
+  pointsEarned          Int?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  field             Field              @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  coupon            Coupon?            @relation(fields: [couponCode], references: [code])
+  pointTransactions PointTransaction[]
+
+  @@unique([fieldId, date, timeSlot])
+}
+
+model Coupon {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  discountType  String    // "PERCENT" or "FIXED"
+  discountValue Float
+  maxUses       Int?
+  usedCount     Int       @default(0)
+  expiresAt     DateTime?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  bookings Booking[]
+}
+
+model WaitingList {
+  id        String   @id @default(cuid())
+  userId    String
+  fieldId   String
+  date      DateTime
+  timeSlot  String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  field Field @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([fieldId, date, timeSlot, userId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  fieldId   String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  field Field @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, fieldId])
+}

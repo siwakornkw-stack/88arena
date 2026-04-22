@@ -1,0 +1,118 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+
+export default function TwoFAPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [enabled, setEnabled] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [secret, setSecret] = useState('');
+  const [code, setCode] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/sport/auth/2fa/setup')
+      .then((r) => r.json())
+      .then((d) => {
+        setEnabled(d.enabled);
+        if (!d.enabled) {
+          setQrDataUrl(d.qrDataUrl ?? null);
+          setSecret(d.secret ?? '');
+        }
+        setLoading(false);
+      })
+      .catch(() => { toast.error('โหลดข้อมูลไม่สำเร็จ'); setLoading(false); });
+  }, []);
+
+  async function handleSubmit(action: 'enable' | 'disable') {
+    if (code.length !== 6) return;
+    setSubmitting(true);
+    const res = await fetch('/api/sport/auth/2fa/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, action }),
+    });
+    const data = await res.json();
+    setSubmitting(false);
+    if (!res.ok) { toast.error(data.error); return; }
+    toast.success(data.enabled ? 'เปิดใช้งาน 2FA สำเร็จ!' : 'ปิดการใช้งาน 2FA แล้ว');
+    setEnabled(data.enabled);
+    setCode('');
+    if (!data.enabled) router.push('/sport/profile');
+  }
+
+  const inputCls = 'w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-400 transition text-center tracking-widest text-xl';
+
+  if (loading) return <div className="wrapper py-20 text-center text-gray-400">กำลังโหลด...</div>;
+
+  return (
+    <div className="wrapper py-8 max-w-md space-y-6">
+      <div className="flex items-center gap-3">
+        <a href="/sport/profile" className="text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition">← โปรไฟล์</a>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">🔐 ยืนยัน 2 ขั้นตอน (2FA)</h1>
+      </div>
+
+      {enabled ? (
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700/50 p-6 space-y-5">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-3xl">✅</span>
+            </div>
+            <p className="font-semibold text-gray-900 dark:text-white">2FA เปิดใช้งานอยู่</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">บัญชีของคุณได้รับการป้องกันด้วยการยืนยัน 2 ขั้นตอน</p>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">กรอกรหัสจาก Authenticator เพื่อปิด 2FA</label>
+            <input className={inputCls} placeholder="000000" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} maxLength={6} />
+          </div>
+          <button
+            onClick={() => handleSubmit('disable')}
+            disabled={submitting || code.length !== 6}
+            className="w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition disabled:opacity-60"
+          >
+            {submitting ? 'กำลังปิด...' : 'ปิดการใช้งาน 2FA'}
+          </button>
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700/50 p-6 space-y-5">
+          <div>
+            <p className="font-semibold text-gray-900 dark:text-white mb-1">ขั้นตอนที่ 1</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">ดาวน์โหลดแอป Authenticator (Google Authenticator, Authy หรืออื่นๆ) แล้วสแกน QR Code</p>
+          </div>
+
+          {qrDataUrl && (
+            <div className="flex justify-center">
+              <div className="bg-white p-3 rounded-xl border border-gray-200">
+                <img src={qrDataUrl} alt="QR Code" className="w-48 h-48" />
+              </div>
+            </div>
+          )}
+
+          {secret && (
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-center">
+              <p className="text-xs text-gray-400 mb-1">หรือกรอก Secret Key ด้วยตัวเอง</p>
+              <code className="text-sm font-mono text-gray-700 dark:text-gray-300 break-all">{secret}</code>
+            </div>
+          )}
+
+          <div>
+            <p className="font-semibold text-gray-900 dark:text-white mb-1">ขั้นตอนที่ 2</p>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 block">กรอกรหัส 6 หลักจากแอปเพื่อยืนยัน</label>
+            <input className={inputCls} placeholder="000000" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))} maxLength={6} />
+          </div>
+
+          <button
+            onClick={() => handleSubmit('enable')}
+            disabled={submitting || code.length !== 6}
+            className="w-full gradient-btn py-2.5 rounded-xl text-white text-sm font-semibold disabled:opacity-60"
+          >
+            {submitting ? 'กำลังเปิดใช้งาน...' : 'เปิดใช้งาน 2FA'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}

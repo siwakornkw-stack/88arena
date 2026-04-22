@@ -1,0 +1,20 @@
+{
+  "name": "88ARENA - จองสนามกีฬา",
+  "short_name": "88ARENA",
+  "description": "ระบบจองสนามกีฬาออนไลน์",
+  "start_url": "/sport",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/api/icons/192", "sizes": "192x192", "type": "image/png" },
+    { "src": "/api/icons/512", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "จองสนาม", "url": "/sport", "description": "ค้นหาและจองสนามกีฬา" },
+    { "name": "การจองของฉัน", "url": "/sport/bookings", "description": "ดูประวัติการจอง" }
+  ],
+  "categories": ["sports", "lifestyle"],
+  "lang": "th"
+}
