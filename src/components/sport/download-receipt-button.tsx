@@ -21,137 +21,101 @@ interface ReceiptData {
 export function DownloadReceiptButton({ booking }: { booking: ReceiptData }) {
   const [loading, setLoading] = useState(false);
 
-  async function handleDownload() {
+  function handleDownload() {
     setLoading(true);
     try {
-      const { jsPDF } = await import('jspdf');
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const id = booking.bookingId.slice(-8).toUpperCase();
+      const dateStr = new Date(booking.date).toLocaleDateString('th-TH', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      });
+      const createdStr = new Date(booking.createdAt).toLocaleString('th-TH');
+      const original = booking.totalAmount + (booking.discountAmount ?? 0);
 
-      const pageW = doc.internal.pageSize.getWidth();
-      const margin = 20;
-      let y = margin;
+      const html = `<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>ใบเสร็จ #${id}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Sarabun', 'Tahoma', sans-serif; background: #f3f4f6; padding: 32px; color: #1e1e1e; }
+    .page { max-width: 600px; margin: 0 auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.10); }
+    .header { background: linear-gradient(135deg,#6366f1,#8b5cf6); padding: 28px 32px; color: #fff; }
+    .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .header p { font-size: 13px; opacity: 0.85; }
+    .header-row { display: flex; justify-content: space-between; align-items: flex-start; }
+    .ref { text-align: right; font-size: 12px; opacity: 0.85; }
+    .ref strong { font-size: 16px; display: block; }
+    .badge { display: inline-block; background: #22c55e; color: #fff; border-radius: 999px; padding: 3px 14px; font-size: 12px; font-weight: 700; margin: 20px 32px 0; }
+    .body { padding: 24px 32px 32px; }
+    .section { margin-bottom: 20px; }
+    .section-title { font-size: 12px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 0.06em; padding-bottom: 6px; border-bottom: 1.5px solid #e5e7eb; margin-bottom: 12px; }
+    .row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+    .row .label { color: #6b7280; }
+    .row .value { font-weight: 600; text-align: right; max-width: 60%; }
+    .divider { border: none; border-top: 1px solid #e5e7eb; margin: 16px 0; }
+    .total-box { background: linear-gradient(135deg,#6366f1,#8b5cf6); border-radius: 10px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; color: #fff; }
+    .total-box .label { font-size: 14px; font-weight: 600; }
+    .total-box .amount { font-size: 22px; font-weight: 800; }
+    .footer { text-align: center; font-size: 11px; color: #9ca3af; padding: 16px 32px 24px; border-top: 1px solid #f3f4f6; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .page { box-shadow: none; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="header-row">
+        <div>
+          <h1>🏟️ 88ARENA</h1>
+          <p>ใบเสร็จรับเงิน / Receipt</p>
+        </div>
+        <div class="ref">
+          <strong>#${id}</strong>
+          ${createdStr}
+        </div>
+      </div>
+    </div>
+    <div class="badge">${booking.status === 'APPROVED' ? '✅ อนุมัติแล้ว' : booking.status}</div>
+    <div class="body">
+      <div class="section">
+        <div class="section-title">รายละเอียดการจอง</div>
+        <div class="row"><span class="label">สนาม</span><span class="value">${booking.fieldName}</span></div>
+        <div class="row"><span class="label">ประเภทกีฬา</span><span class="value">${booking.sportType}</span></div>
+        <div class="row"><span class="label">วันที่</span><span class="value">${dateStr}</span></div>
+        <div class="row"><span class="label">เวลา</span><span class="value">${booking.timeSlot} น.</span></div>
+      </div>
+      <div class="section">
+        <div class="section-title">ข้อมูลผู้จอง</div>
+        <div class="row"><span class="label">ชื่อ</span><span class="value">${booking.userName}</span></div>
+        <div class="row"><span class="label">อีเมล</span><span class="value">${booking.userEmail}</span></div>
+      </div>
+      <div class="section">
+        <div class="section-title">สรุปการชำระเงิน</div>
+        <div class="row"><span class="label">ค่าจองสนาม</span><span class="value">฿${original.toLocaleString()}</span></div>
+        ${booking.discountAmount && booking.discountAmount > 0 ? `<div class="row"><span class="label">ส่วนลด${booking.couponCode ? ` (${booking.couponCode})` : ''}</span><span class="value" style="color:#16a34a">-฿${booking.discountAmount.toLocaleString()}</span></div>` : ''}
+        <hr class="divider" />
+        <div class="total-box">
+          <span class="label">ยอดรวมสุทธิ</span>
+          <span class="amount">฿${booking.totalAmount.toLocaleString()}</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      ขอบคุณที่ใช้บริการ 88ARENA — กรุณาแสดงใบเสร็จนี้เมื่อเข้าใช้สนาม<br/>
+      สร้างเมื่อ: ${new Date().toLocaleString('th-TH')}
+    </div>
+  </div>
+  <script>window.onload = function(){ window.print(); }<\/script>
+</body>
+</html>`;
 
-      // Header bar
-      doc.setFillColor(99, 102, 241);
-      doc.rect(0, 0, pageW, 40, 'F');
-
-      // Title
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(20);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Sport Booking Receipt', margin, 18);
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Invoice / Tax Receipt', margin, 26);
-
-      // Booking ID top right
-      doc.setFontSize(9);
-      doc.text(`#${booking.bookingId.slice(-8).toUpperCase()}`, pageW - margin, 18, { align: 'right' });
-      doc.text(new Date(booking.createdAt).toLocaleDateString('en-GB'), pageW - margin, 25, { align: 'right' });
-
-      y = 55;
-
-      // Status badge
-      const statusColor = booking.status === 'APPROVED' ? [34, 197, 94] : [234, 179, 8];
-      doc.setFillColor(statusColor[0], statusColor[1], statusColor[2]);
-      doc.roundedRect(margin, y - 5, 35, 8, 2, 2, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'bold');
-      doc.text(booking.status, margin + 17.5, y + 0.5, { align: 'center' });
-
-      y += 10;
-      doc.setTextColor(30, 30, 30);
-
-      // Section helper
-      const drawSection = (title: string, rows: [string, string][], startY: number): number => {
-        doc.setFillColor(245, 247, 250);
-        doc.roundedRect(margin, startY, pageW - margin * 2, 8, 2, 2, 'F');
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(99, 102, 241);
-        doc.text(title, margin + 3, startY + 5.5);
-        let rowY = startY + 13;
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        for (const [label, value] of rows) {
-          doc.setTextColor(100, 100, 100);
-          doc.text(label, margin + 3, rowY);
-          doc.setTextColor(30, 30, 30);
-          doc.setFont('helvetica', 'bold');
-          doc.text(value, pageW - margin - 3, rowY, { align: 'right' });
-          doc.setFont('helvetica', 'normal');
-          rowY += 8;
-        }
-        return rowY + 4;
-      };
-
-      y = drawSection('Booking Details', [
-        ['Field', booking.fieldName],
-        ['Sport Type', booking.sportType],
-        ['Date', new Date(booking.date).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })],
-        ['Time', `${booking.timeSlot} hrs.`],
-      ], y);
-
-      y = drawSection('Customer Information', [
-        ['Name', booking.userName],
-        ['Email', booking.userEmail],
-      ], y + 4);
-
-      // Pricing
-      y += 4;
-      doc.setFillColor(245, 247, 250);
-      doc.roundedRect(margin, y, pageW - margin * 2, 8, 2, 2, 'F');
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(99, 102, 241);
-      doc.text('Payment Summary', margin + 3, y + 5.5);
-      y += 13;
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-
-      doc.text('Booking Fee', margin + 3, y);
-      doc.setTextColor(30, 30, 30);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`THB ${booking.totalAmount + (booking.discountAmount ?? 0)}`, pageW - margin - 3, y, { align: 'right' });
-      doc.setFont('helvetica', 'normal');
-      y += 8;
-
-      if (booking.discountAmount && booking.discountAmount > 0) {
-        doc.setTextColor(100, 100, 100);
-        doc.text(`Discount${booking.couponCode ? ` (${booking.couponCode})` : ''}`, margin + 3, y);
-        doc.setTextColor(34, 197, 94);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`-THB ${booking.discountAmount}`, pageW - margin - 3, y, { align: 'right' });
-        doc.setFont('helvetica', 'normal');
-        y += 8;
-      }
-
-      // Divider
-      doc.setDrawColor(200, 200, 200);
-      doc.line(margin, y, pageW - margin, y);
-      y += 6;
-
-      // Total
-      doc.setFillColor(99, 102, 241);
-      doc.roundedRect(margin, y, pageW - margin * 2, 12, 2, 2, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('TOTAL', margin + 5, y + 8);
-      doc.text(`THB ${booking.totalAmount.toLocaleString()}`, pageW - margin - 5, y + 8, { align: 'right' });
-      y += 20;
-
-      // Footer
-      doc.setFontSize(8);
-      doc.setTextColor(150, 150, 150);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Thank you for booking with us. Please show this receipt when arriving at the venue.', pageW / 2, y, { align: 'center' });
-      doc.text(`Generated: ${new Date().toLocaleString('en-GB')}`, pageW / 2, y + 5, { align: 'center' });
-
-      doc.save(`receipt-${booking.bookingId.slice(-8).toUpperCase()}.pdf`);
+      const win = window.open('', '_blank');
+      if (!win) return;
+      win.document.write(html);
+      win.document.close();
     } finally {
       setLoading(false);
     }
