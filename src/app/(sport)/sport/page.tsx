@@ -58,7 +58,7 @@ export default async function SportHomePage({ searchParams }: PageProps) {
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-500 to-primary-700"> สนามกีฬา</span>
         </h1>
         <p className="mt-3 text-gray-500 dark:text-gray-400 text-lg max-w-xl mx-auto">
-          สนามกีฬาคุณภาพดีทั่วกรุงเทพ จองง่าย จ่ายสะดวก
+          สนามกีฬาคุณภาพดีภูเก็ต จองง่าย จ่ายสะดวก
         </p>
 
         {/* Stats */}
