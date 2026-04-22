@@ -108,14 +108,21 @@ export function DownloadReceiptButton({ booking }: { booking: ReceiptData }) {
       สร้างเมื่อ: ${new Date().toLocaleString('th-TH')}
     </div>
   </div>
-  <script>window.onload = function(){ window.print(); }<\/script>
 </body>
 </html>`;
 
-      const win = window.open('', '_blank');
-      if (!win) return;
-      win.document.write(html);
-      win.document.close();
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:800px;height:600px;border:0;';
+      document.body.appendChild(iframe);
+      const iframeDoc = iframe.contentDocument ?? iframe.contentWindow?.document;
+      if (!iframeDoc) return;
+      iframeDoc.open();
+      iframeDoc.write(html);
+      iframeDoc.close();
+      setTimeout(() => {
+        iframe.contentWindow?.print();
+        setTimeout(() => document.body.removeChild(iframe), 1000);
+      }, 500);
     } finally {
       setLoading(false);
     }
