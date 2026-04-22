@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { Resend } from 'resend';
 import { sendPushToUser } from '@/lib/web-push';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY ?? 're_placeholder');
 const FROM = process.env.EMAIL_FROM ?? 'noreply@88arena.com';
 
 export async function notifyWaitingList(fieldId: string, date: Date, timeSlot: string) {
