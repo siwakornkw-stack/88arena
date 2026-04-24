@@ -1,0 +1,55 @@
+{
+  "common": {
+    "loading": "กำลังโหลด...",
+    "save": "บันทึก",
+    "cancel": "ยกเลิก",
+    "confirm": "ยืนยัน",
+    "delete": "ลบ",
+    "edit": "แก้ไข",
+    "back": "กลับ",
+    "next": "ถัดไป",
+    "submit": "ส่ง",
+    "search": "ค้นหา"
+  },
+  "header": {
+    "fields": "สนามทั้งหมด",
+    "myBookings": "การจองของฉัน",
+    "chat": "ติดต่อแอดมิน",
+    "profile": "โปรไฟล์",
+    "adminDashboard": "Admin Dashboard",
+    "signin": "เข้าสู่ระบบ",
+    "signup": "สมัครสมาชิก",
+    "signout": "ออกจากระบบ",
+    "myProfile": "โปรไฟล์ของฉัน",
+    "admin": "Admin",
+    "emailUnverified": "อีเมลยังไม่ได้รับการยืนยัน — กรุณาตรวจสอบกล่องจดหมายของคุณ",
+    "resendVerification": "ส่งอีกครั้ง"
+  },
+  "mobileNav": {
+    "fields": "🏟️ สนาม",
+    "bookings": "📋 การจอง",
+    "chat": "💬 แชท",
+    "profile": "👤 โปรไฟล์",
+    "admin": "⚙️ Admin"
+  },
+  "chat": {
+    "title": "ติดต่อแอดมิน",
+    "titleAdmin": "Admin Chat",
+    "subtitle": "เราจะตอบกลับให้เร็วที่สุด",
+    "windowTitle": "แชทกับทีมงาน 88ARENA",
+    "empty": "ยังไม่มีข้อความ เริ่มสนทนากันได้เลย",
+    "placeholder": "พิมพ์ข้อความ...",
+    "send": "ส่ง",
+    "sendFailed": "ส่งไม่สำเร็จ",
+    "conversations": "บทสนทนา",
+    "selectConversation": "เลือกบทสนทนาเพื่อเริ่มแชท",
+    "noConversations": "ยังไม่มีบทสนทนา",
+    "noMessages": "ไม่มีข้อความ",
+    "user": "ผู้ใช้"
+  },
+  "language": {
+    "switch": "ภาษา",
+    "th": "ไทย",
+    "en": "English"
+  }
+}

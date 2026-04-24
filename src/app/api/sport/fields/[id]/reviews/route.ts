@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { z } from 'zod';
+import { rateLimit } from '@/lib/rate-limit';
+
+const REVIEW_RATE_LIMIT = { limit: 5, windowMs: 60 * 1000 };
 
 const schema = z.object({
   rating: z.number().int().min(1).max(5),
@@ -21,6 +24,11 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const rl = rateLimit(`review:${session.user.id}`, REVIEW_RATE_LIMIT);
+  if (!rl.success) {
+    return NextResponse.json({ error: 'คุณส่งคำขอมากเกินไป กรุณารอสักครู่' }, { status: 429 });
+  }
 
   const { id: fieldId } = await params;
 

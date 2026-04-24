@@ -1,0 +1,55 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "search": "Search"
+  },
+  "header": {
+    "fields": "All Fields",
+    "myBookings": "My Bookings",
+    "chat": "Contact Admin",
+    "profile": "Profile",
+    "adminDashboard": "Admin Dashboard",
+    "signin": "Sign In",
+    "signup": "Sign Up",
+    "signout": "Sign Out",
+    "myProfile": "My Profile",
+    "admin": "Admin",
+    "emailUnverified": "Email not verified — please check your inbox",
+    "resendVerification": "Resend"
+  },
+  "mobileNav": {
+    "fields": "🏟️ Fields",
+    "bookings": "📋 Bookings",
+    "chat": "💬 Chat",
+    "profile": "👤 Profile",
+    "admin": "⚙️ Admin"
+  },
+  "chat": {
+    "title": "Contact Admin",
+    "titleAdmin": "Admin Chat",
+    "subtitle": "We'll respond as soon as possible",
+    "windowTitle": "Chat with 88ARENA team",
+    "empty": "No messages yet. Start a conversation!",
+    "placeholder": "Type a message...",
+    "send": "Send",
+    "sendFailed": "Failed to send",
+    "conversations": "Conversations",
+    "selectConversation": "Select a conversation to start chatting",
+    "noConversations": "No conversations yet",
+    "noMessages": "No messages",
+    "user": "User"
+  },
+  "language": {
+    "switch": "Language",
+    "th": "ไทย",
+    "en": "English"
+  }
+}

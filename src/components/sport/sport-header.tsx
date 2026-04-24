@@ -4,10 +4,13 @@ import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { useState } from 'react';
 import { NotificationBell } from './notification-bell';
+import { LanguageSwitcher } from './language-switcher';
+import { useTranslation } from '@/i18n/provider';
 
 export function SportHeader() {
   const { data: session, status } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   const isAdmin = session?.user?.role === 'ADMIN';
   const isUnverified = session && !session.user.emailVerified;
@@ -24,27 +27,33 @@ export function SportHeader() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
           <Link href="/sport" className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">
-            สนามทั้งหมด
+            {t('header.fields')}
           </Link>
           {session && (
             <>
               <Link href="/sport/bookings" className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">
-                การจองของฉัน
+                {t('header.myBookings')}
               </Link>
+              {!isAdmin && (
+                <Link href="/sport/chat" className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">
+                  {t('header.chat')}
+                </Link>
+              )}
               <Link href="/sport/profile" className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">
-                โปรไฟล์
+                {t('header.profile')}
               </Link>
             </>
           )}
           {isAdmin && (
             <Link href="/sport/admin" className="text-sm text-primary-600 dark:text-primary-400 font-semibold">
-              Admin Dashboard
+              {t('header.adminDashboard')}
             </Link>
           )}
         </nav>
 
         {/* Right Side */}
         <div className="flex items-center gap-3">
+          <LanguageSwitcher />
           {session && <NotificationBell />}
           {status === 'loading' ? (
             <div className="h-9 w-24 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
@@ -70,25 +79,25 @@ export function SportHeader() {
                     <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-800">
                       <p className="text-xs text-gray-400">{session.user?.email}</p>
                       {isAdmin && (
-                        <span className="text-xs font-medium text-primary-600 dark:text-primary-400">● Admin</span>
+                        <span className="text-xs font-medium text-primary-600 dark:text-primary-400">● {t('header.admin')}</span>
                       )}
                     </div>
                     <Link href="/sport/profile" onClick={() => setMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-                      โปรไฟล์ของฉัน
+                      {t('header.myProfile')}
                     </Link>
                     <Link href="/sport/bookings" onClick={() => setMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-                      การจองของฉัน
+                      {t('header.myBookings')}
                     </Link>
                     {isAdmin && (
                       <Link href="/sport/admin" onClick={() => setMenuOpen(false)} className="block px-4 py-2 text-sm text-primary-600 dark:text-primary-400 font-medium hover:bg-gray-50 dark:hover:bg-gray-800">
-                        Admin Dashboard
+                        {t('header.adminDashboard')}
                       </Link>
                     )}
                     <button
                       onClick={() => { signOut({ callbackUrl: '/sport' }); setMenuOpen(false); }}
                       className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
-                      ออกจากระบบ
+                      {t('header.signout')}
                     </button>
                   </div>
                 </>
@@ -100,13 +109,13 @@ export function SportHeader() {
                 href="/sport/auth/signin"
                 className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-primary-600 px-3 py-2"
               >
-                เข้าสู่ระบบ
+                {t('header.signin')}
               </Link>
               <Link
                 href="/sport/auth/signup"
                 className="gradient-btn text-sm font-medium text-white px-4 py-2 rounded-full"
               >
-                สมัครสมาชิก
+                {t('header.signup')}
               </Link>
             </div>
           )}
@@ -116,8 +125,8 @@ export function SportHeader() {
       {/* Email verification warning */}
       {isUnverified && (
         <div className="bg-amber-50 dark:bg-amber-900/20 border-t border-amber-200 dark:border-amber-800/50 px-4 py-2 text-center text-xs text-amber-700 dark:text-amber-400">
-          อีเมลยังไม่ได้รับการยืนยัน — กรุณาตรวจสอบกล่องจดหมายของคุณ
-          <a href="/sport/auth/resend-verification" className="ml-2 underline font-medium">ส่งอีกครั้ง</a>
+          {t('header.emailUnverified')}
+          <a href="/sport/auth/resend-verification" className="ml-2 underline font-medium">{t('header.resendVerification')}</a>
         </div>
       )}
 
@@ -125,17 +134,22 @@ export function SportHeader() {
       {session && (
         <div className="md:hidden border-t border-gray-100 dark:border-gray-800 flex">
           <Link href="/sport" className="flex-1 text-center py-2 text-xs text-gray-600 dark:text-gray-400">
-            🏟️ สนาม
+            {t('mobileNav.fields')}
           </Link>
           <Link href="/sport/bookings" className="flex-1 text-center py-2 text-xs text-gray-600 dark:text-gray-400">
-            📋 การจอง
+            {t('mobileNav.bookings')}
           </Link>
+          {!isAdmin && (
+            <Link href="/sport/chat" className="flex-1 text-center py-2 text-xs text-gray-600 dark:text-gray-400">
+              {t('mobileNav.chat')}
+            </Link>
+          )}
           <Link href="/sport/profile" className="flex-1 text-center py-2 text-xs text-gray-600 dark:text-gray-400">
-            👤 โปรไฟล์
+            {t('mobileNav.profile')}
           </Link>
           {isAdmin && (
             <Link href="/sport/admin" className="flex-1 text-center py-2 text-xs text-primary-600 dark:text-primary-400 font-medium">
-              ⚙️ Admin
+              {t('mobileNav.admin')}
             </Link>
           )}
         </div>
